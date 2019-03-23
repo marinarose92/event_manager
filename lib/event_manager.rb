@@ -48,10 +48,21 @@ def clean_phone_numbers(home_phone)
     end
 end
 
+def most_freq_reg_hours(registration_date)
+    reg_times = []
+    nice_dates = registration_date.each do |date|
+        reg_times.push(date.strftime('%k'))
+    end
+    tracker = reg_times.inject(Hash.new(0)) { |h,v| h[v] += 1; h }
+    freq = tracker.max_by{|k,v| v}
+
+    puts "The most frequent time of registration is #{freq[0]} o'clock with #{freq[1]} occurrences."
+end
+
 def most_freq_reg_dates(date_arr)
     tracker = {"Monday" => 0, "Tuesday" => 0, "Wednesday" => 0, "Thursday" => 0, "Friday" => 0, "Saturday" => 0, "Sunday" => 0 }
     
-    date_arr.map do |date|
+    date_arr.each do |date|
         if date.monday? 
             tracker["Monday"] += 1
         elsif date.tuesday?
@@ -71,10 +82,10 @@ def most_freq_reg_dates(date_arr)
 
     freq = tracker.max_by{|k,v| v}
 
-    puts "The most frequent time of registration is #{freq[0]} with #{freq[1]} occurrences."
+    puts "The most frequent day of registration is #{freq[0]} with #{freq[1]} occurrences."
 end
 
-def clean_date(registration_date)
+def rubified_date(registration_date)
     registration_date = DateTime.strptime(registration_date, '%m/%d/%y %k:%M')
 end
 
@@ -93,12 +104,13 @@ contents.each do |row|
   zipcode = clean_zipcode(row[:zipcode])
   home_phone = clean_phone_numbers(row[:homephone])
   legislators = legislators_by_zipcode(zipcode)
-  registration_date = clean_date(row[:regdate])
+  registration_date = rubified_date(row[:regdate])
   date_arr = date_arr.push(registration_date)
 
   form_letter = erb_template.result(binding)
-    puts "#{name} registered on #{registration_date.strftime('%m/%d/%Y')} with the phone number #{home_phone}."
+    #puts "#{name} registered on #{registration_date.strftime('%m/%d/%Y')} with the phone number #{home_phone}."
     #save_thank_you_letters(id,form_letter)
 end
 puts " "
 most_freq_reg_dates(date_arr)
+most_freq_reg_hours(date_arr)
